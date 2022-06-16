@@ -19,4 +19,4 @@ if(BT_BUILD_TESTS)
 endif()
 
 add_subdirectory(src)
-add_subdirectory(third_party)
+add_subdirectory(${PROJECT_SOURCE_DIR}/../third_party third_party)
