@@ -7,3 +7,6 @@
 [submodule "breakable_toy/third_party/fmt"]
 	path = breakable_toy/third_party/fmt
 	url = https://github.com/fmtlib/fmt.git
+[submodule "breakable_toy/third_party/glfw"]
+	path = breakable_toy/third_party/glfw
+	url = https://github.com/glfw/glfw.git

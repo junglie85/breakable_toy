@@ -14,6 +14,18 @@ mark_as_advanced(FMT_SYSTEM_HEADERS)
 mark_as_advanced(FMT_TEST)
 mark_as_advanced(FMT_WERROR)
 
+# glfw
+set(GLFW_BUILD_DOCS OFF CACHE BOOL "Don't build GLFW docs" FORCE)
+set(GLFW_INSTALL OFF CACHE BOOL "Don't install GLFW" FORCE)
+add_subdirectory(glfw)
+
+mark_as_advanced(GLFW_BUILD_COCOA)
+mark_as_advanced(GLFW_BUILD_DOCS)
+mark_as_advanced(GLFW_BUILD_EXAMPLES)
+mark_as_advanced(GLFW_BUILD_TESTS)
+mark_as_advanced(GLFW_INSTALL)
+mark_as_advanced(GLFW_LIBRARY_TYPE)
+
 # spdlog
 set(SPDLOG_FMT_EXTERNAL ON CACHE BOOL "Use bundled fmt library" FORCE)
 add_subdirectory(spdlog)
