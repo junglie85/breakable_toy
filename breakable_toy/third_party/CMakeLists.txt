@@ -14,6 +14,12 @@ mark_as_advanced(FMT_SYSTEM_HEADERS)
 mark_as_advanced(FMT_TEST)
 mark_as_advanced(FMT_WERROR)
 
+# glad
+add_subdirectory(glad/cmake)
+glad_add_library(glad_vulkan_12 REPRODUCIBLE LOADER API vulkan=1.2)
+
+mark_as_advanced(GLAD_SOURCES_DIR)
+
 # glfw
 set(GLFW_BUILD_DOCS OFF CACHE BOOL "Don't build GLFW docs" FORCE)
 set(GLFW_INSTALL OFF CACHE BOOL "Don't install GLFW" FORCE)

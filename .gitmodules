@@ -10,3 +10,7 @@
 [submodule "breakable_toy/third_party/glfw"]
 	path = breakable_toy/third_party/glfw
 	url = https://github.com/glfw/glfw.git
+[submodule "breakable_toy/third_party/glad"]
+	path = breakable_toy/third_party/glad
+	url = https://github.com/Dav1dde/glad.git
+	branch = glad2
