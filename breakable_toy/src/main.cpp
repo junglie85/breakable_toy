@@ -84,18 +84,20 @@ class window {
 
     bool close_requested() const { return should_close; }
 
-    void end_frame() { should_close = glfwWindowShouldClose(native); }
-
     void destroy()
     {
-        glfwDestroyWindow(native);
+        glfwDestroyWindow(handle);
         glfwTerminate();
     }
 
-  private:
-    window(GLFWwindow* native) : native(native) { }
+    void end_frame() { should_close = glfwWindowShouldClose(handle); }
 
-    GLFWwindow* native;
+    GLFWwindow* get_handle() const { return handle; }
+
+  private:
+    window(GLFWwindow* native) : handle(native) { }
+
+    GLFWwindow* handle;
     bool should_close;
 };
 
@@ -129,9 +131,34 @@ static VKAPI_ATTR VkBool32 VKAPI_CALL debug_messenger_callback(
     return VK_FALSE;
 }
 
+VkResult create_debug_utils_messenger_ext(VkInstance instance,
+    const VkDebugUtilsMessengerCreateInfoEXT* debug_utils_create_info,
+    const VkAllocationCallbacks* allocator,
+    VkDebugUtilsMessengerEXT* debug_utils_messenger)
+{
+    auto fn = (PFN_vkCreateDebugUtilsMessengerEXT)vkGetInstanceProcAddr(
+        instance, "vkCreateDebugUtilsMessengerEXT");
+    if (fn != nullptr) {
+        return fn(instance, debug_utils_create_info, allocator, debug_utils_messenger);
+    } else {
+        return VK_ERROR_EXTENSION_NOT_PRESENT;
+    }
+}
+
+void destroy_debug_utils_messenger_ext(VkInstance instance,
+    VkDebugUtilsMessengerEXT debug_utils_messenger,
+    const VkAllocationCallbacks* allocator)
+{
+    auto fn = (PFN_vkDestroyDebugUtilsMessengerEXT)vkGetInstanceProcAddr(
+        instance, "vkDestroyDebugUtilsMessengerEXT");
+    if (fn != nullptr) {
+        fn(instance, debug_utils_messenger, allocator);
+    }
+}
+
 class gpu {
   public:
-    static gpu init()
+    static gpu init(const window& w)
     {
         VkAllocationCallbacks* allocator = nullptr;
 
@@ -139,6 +166,8 @@ class gpu {
 
         g.init_glad();
         g.create_instance();
+        g.create_debug_utils_messenger();
+        g.create_surface(w);
 
         // g.init_glad(); // Do this again once we have an instance, physical device and device.
         // https://github.com/Dav1dde/glad/blob/glad2/example/c/vulkan_tri_glfw/vulkan_tri_glfw.c#L1837-L1841
@@ -151,6 +180,10 @@ class gpu {
 
     void destroy()
     {
+        vkDestroySurfaceKHR(instance, surface, allocator);
+        if (vk_debug) {
+            destroy_debug_utils_messenger_ext(instance, debug_utils_messenger, allocator);
+        }
         vkDestroyInstance(instance, allocator);
         gladLoaderUnloadVulkan();
     }
@@ -210,20 +243,7 @@ class gpu {
             instance_info.enabledLayerCount = static_cast<uint32_t>(required_layers.size());
             instance_info.ppEnabledLayerNames = required_layers.data();
 
-            VkDebugUtilsMessengerCreateInfoEXT debug_utils_create_info {
-                VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT
-            };
-            debug_utils_create_info.messageSeverity
-                = VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT
-                | VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT
-                | VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT
-                | VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
-            debug_utils_create_info.messageType = VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT
-                | VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT
-                | VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
-            debug_utils_create_info.pfnUserCallback = debug_messenger_callback;
-            debug_utils_create_info.pUserData = nullptr;
-
+            auto debug_utils_create_info = get_debug_utils_create_info();
             instance_info.pNext = &debug_utils_create_info;
         } else {
             instance_info.enabledLayerCount = 0;
@@ -329,8 +349,46 @@ class gpu {
         return true;
     }
 
+    void create_debug_utils_messenger()
+    {
+        if (!vk_debug) {
+            return;
+        }
+
+        auto debug_utils_create_info = get_debug_utils_create_info();
+        VK_THROW(create_debug_utils_messenger_ext(
+                     instance, &debug_utils_create_info, nullptr, &debug_utils_messenger),
+            "unable to create debug utils messenger");
+    }
+
+    VkDebugUtilsMessengerCreateInfoEXT get_debug_utils_create_info()
+    {
+        VkDebugUtilsMessengerCreateInfoEXT debug_utils_create_info {
+            VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT
+        };
+        debug_utils_create_info.messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT
+            | VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT
+            | VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT
+            | VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
+        debug_utils_create_info.messageType = VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT
+            | VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT
+            | VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
+        debug_utils_create_info.pfnUserCallback = debug_messenger_callback;
+        debug_utils_create_info.pUserData = nullptr;
+
+        return debug_utils_create_info;
+    }
+
+    void create_surface(const window& w)
+    {
+        VK_THROW(glfwCreateWindowSurface(instance, w.get_handle(), allocator, &surface),
+            "unable to create Vulkan window surface");
+    }
+
     VkAllocationCallbacks* allocator;
     VkInstance instance;
+    VkDebugUtilsMessengerEXT debug_utils_messenger;
+    VkSurfaceKHR surface;
 };
 } // namespace bt
 
@@ -339,7 +397,7 @@ int main(int argc, char* argv[])
     try {
         auto logger = bt::logger::init();
         auto window = bt::window::init();
-        auto gpu = bt::gpu::init();
+        auto gpu = bt::gpu::init(window);
 
         bool running = true;
         while (running) {
