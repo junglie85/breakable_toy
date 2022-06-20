@@ -32,6 +32,9 @@ mark_as_advanced(GLFW_BUILD_TESTS)
 mark_as_advanced(GLFW_INSTALL)
 mark_as_advanced(GLFW_LIBRARY_TYPE)
 
+# glm
+add_subdirectory(glm)
+
 # spdlog
 set(SPDLOG_FMT_EXTERNAL ON CACHE BOOL "Use bundled fmt library" FORCE)
 add_subdirectory(spdlog)
