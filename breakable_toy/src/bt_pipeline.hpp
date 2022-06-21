@@ -7,7 +7,20 @@
 #include <vector>
 
 namespace bt {
-struct bt_pipeline_config_info { };
+struct bt_pipeline_config_info {
+    VkViewport viewport;
+    VkRect2D scissor;
+    VkPipelineViewportStateCreateInfo viewport_info;
+    VkPipelineInputAssemblyStateCreateInfo input_assembly_info;
+    VkPipelineRasterizationStateCreateInfo rasterisation_info;
+    VkPipelineMultisampleStateCreateInfo multisample_info;
+    VkPipelineColorBlendAttachmentState color_blend_attachment;
+    VkPipelineColorBlendStateCreateInfo color_blend_info;
+    VkPipelineDepthStencilStateCreateInfo depth_stencil_info;
+    VkPipelineLayout pipeline_layout = nullptr;
+    VkRenderPass render_pass = nullptr;
+    uint32_t subpass = 0;
+};
 
 class bt_pipeline {
   public:
@@ -18,7 +31,7 @@ class bt_pipeline {
         std::string_view frag_filepath,
         const bt_pipeline_config_info config_info);
     bt_pipeline(const bt_pipeline&) = delete;
-    ~bt_pipeline() = default;
+    ~bt_pipeline();
 
     void operator=(const bt_pipeline&) = delete;
 
@@ -27,7 +40,7 @@ class bt_pipeline {
         std::string_view frag_filepath,
         const bt_pipeline_config_info config_info);
 
-    void create_shader_module(const std::vector<char>& code, VkShaderModule shader_module);
+    void create_shader_module(const std::vector<char>& code, VkShaderModule* shader_module);
 
     bt_device& device;
     VkPipeline graphics_pipeline;
