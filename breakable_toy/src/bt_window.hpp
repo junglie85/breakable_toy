@@ -18,6 +18,8 @@ class bt_window {
     bt_window& operator=(const bt_window&) = delete;
 
     bool should_close() { return glfwWindowShouldClose(handle); }
+    void create_window_surface(
+        VkInstance instance, VkSurfaceKHR* surface, VkAllocationCallbacks* allocator);
 
   private:
     void init_window();

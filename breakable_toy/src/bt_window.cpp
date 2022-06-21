@@ -2,6 +2,8 @@
 
 #include "bt_logger.hpp"
 
+#include <stdexcept>
+
 namespace bt {
 bt_window::bt_window(uint32_t width, uint32_t height, std::string name) :
     width { width }, height { height }, window_name { std::move(name) }
@@ -48,5 +50,13 @@ void bt_window::init_window()
     auto major = GLAD_VERSION_MAJOR(glad_vk_version);
     auto minor = GLAD_VERSION_MINOR(glad_vk_version);
     SPDLOG_INFO("Vulkan version {}.{}", major, minor);
+}
+
+void bt_window::create_window_surface(
+    VkInstance instance, VkSurfaceKHR* surface, VkAllocationCallbacks* allocator)
+{
+    if (glfwCreateWindowSurface(instance, handle, allocator, surface) != VK_SUCCESS) {
+        throw std::runtime_error("failed to create window surface");
+    }
 }
 } // namespace bt

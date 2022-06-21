@@ -1,6 +1,7 @@
 #ifndef APP_HPP
 #define APP_HPP
 
+#include "bt_device.hpp"
 #include "bt_pipeline.hpp"
 #include "bt_window.hpp"
 
@@ -14,7 +15,10 @@ class app {
 
   private:
     bt_window window { WIDTH, HEIGHT, "Breakable Toy" };
-    bt_pipeline pipeline { "shaders/simple_shader.vert.spv", "shaders/simple_shader.frag.spv" };
+    bt_device device { window };
+    bt_pipeline pipeline { device, "shaders/simple_shader.vert.spv",
+        "shaders/simple_shader.frag.spv",
+        bt_pipeline::default_pipeline_config_info(WIDTH, HEIGHT) };
 };
 } // namespace bt
 
