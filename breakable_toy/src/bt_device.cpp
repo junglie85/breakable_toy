@@ -47,11 +47,15 @@ void destroy_debug_utils_messenger_ext(VkInstance instance,
 
 bt_device::bt_device(bt_window& window) : window { window }
 {
+    load_vulkan_function_pointers(nullptr, nullptr, nullptr);
     create_instance();
+    load_vulkan_function_pointers(instance, nullptr, nullptr);
     setup_debug_messenger();
     create_surface();
     pick_physical_device();
+    load_vulkan_function_pointers(instance, physical_device, nullptr);
     create_logical_device();
+    load_vulkan_function_pointers(instance, physical_device, device_);
     create_command_pool();
 }
 
@@ -66,6 +70,19 @@ bt_device::~bt_device()
 
     vkDestroySurfaceKHR(instance, surface_, allocator_);
     vkDestroyInstance(instance, allocator_);
+}
+
+void bt_device::load_vulkan_function_pointers(
+    VkInstance instance, VkPhysicalDevice physical_device, VkDevice device)
+{
+    auto glad_vk_version = gladLoaderLoadVulkan(instance, physical_device, device);
+    if (!glad_vk_version) {
+        throw std::runtime_error("unable to load Vulkan symbols, gladLoad failure");
+    }
+
+    auto major = GLAD_VERSION_MAJOR(glad_vk_version);
+    auto minor = GLAD_VERSION_MINOR(glad_vk_version);
+    SPDLOG_DEBUG("Vulkan version {}.{}", major, minor);
 }
 
 void bt_device::create_instance()
@@ -114,7 +131,7 @@ void bt_device::pick_physical_device()
     if (device_count == 0) {
         throw std::runtime_error("failed to find GPUs with Vulkan support");
     }
-    SPDLOG_INFO("device count: {}", device_count);
+    SPDLOG_DEBUG("device count: {}", device_count);
 
     std::vector<VkPhysicalDevice> devices(device_count);
     vkEnumeratePhysicalDevices(instance, &device_count, devices.data());
@@ -131,7 +148,7 @@ void bt_device::pick_physical_device()
     }
 
     vkGetPhysicalDeviceProperties(physical_device, &properties);
-    SPDLOG_INFO("physical device: {}", properties.deviceName);
+    SPDLOG_DEBUG("physical device: {}", properties.deviceName);
 }
 
 void bt_device::create_logical_device()
@@ -323,17 +340,17 @@ void bt_device::check_instance_extension_support()
     std::vector<VkExtensionProperties> extensions(extension_count);
     vkEnumerateInstanceExtensionProperties(nullptr, &extension_count, extensions.data());
 
-    SPDLOG_TRACE("available extensions:");
+    SPDLOG_DEBUG("available extensions:");
     std::unordered_set<std::string> available;
     for (const auto& extension : extensions) {
-        SPDLOG_TRACE("\t{}", extension.extensionName);
+        SPDLOG_DEBUG("\t{}", extension.extensionName);
         available.insert(extension.extensionName);
     }
 
-    SPDLOG_TRACE("required extensions:");
+    SPDLOG_DEBUG("required extensions:");
     auto required_extensions = get_required_instance_extensions();
     for (const auto& required : required_extensions) {
-        SPDLOG_TRACE("\t{}", required);
+        SPDLOG_DEBUG("\t{}", required);
         if (available.find(required) == available.end()) {
             throw std::runtime_error("missing required extension");
         }
@@ -419,7 +436,7 @@ swapchain_support_details bt_device::query_swapchain_support(VkPhysicalDevice de
     return details;
 }
 
-VkFormat bt_device::find_supported_formats(
+VkFormat bt_device::find_supported_format(
     const std::vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features)
 {
     for (VkFormat format : candidates) {
@@ -564,7 +581,7 @@ void bt_device::create_image_with_info(const VkImageCreateInfo& image_info,
     alloc_info.allocationSize = mem_requirements.size;
     alloc_info.memoryTypeIndex = find_memory_type(mem_requirements.memoryTypeBits, properties);
 
-    if (vkAllocateMemory(device_, &alloc_info, nullptr, &image_memory) != VK_SUCCESS) {
+    if (vkAllocateMemory(device_, &alloc_info, allocator_, &image_memory) != VK_SUCCESS) {
         throw std::runtime_error("failed to allocate image memory");
     }
 

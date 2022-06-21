@@ -58,7 +58,7 @@ class bt_device {
         return find_queue_families(physical_device);
     }
 
-    VkFormat find_supported_formats(const std::vector<VkFormat>& candidates,
+    VkFormat find_supported_format(const std::vector<VkFormat>& candidates,
         VkImageTiling tiling,
         VkFormatFeatureFlags features);
 
@@ -82,6 +82,8 @@ class bt_device {
     VkPhysicalDeviceProperties properties;
 
   private:
+    void load_vulkan_function_pointers(
+        VkInstance instance, VkPhysicalDevice physical_device, VkDevice device);
     void create_instance();
     void setup_debug_messenger();
     void create_surface();

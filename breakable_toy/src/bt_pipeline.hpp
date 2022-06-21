@@ -10,7 +10,6 @@ namespace bt {
 struct bt_pipeline_config_info {
     VkViewport viewport;
     VkRect2D scissor;
-    VkPipelineViewportStateCreateInfo viewport_info;
     VkPipelineInputAssemblyStateCreateInfo input_assembly_info;
     VkPipelineRasterizationStateCreateInfo rasterisation_info;
     VkPipelineMultisampleStateCreateInfo multisample_info;

@@ -18,6 +18,8 @@ class bt_window {
     bt_window& operator=(const bt_window&) = delete;
 
     bool should_close() { return glfwWindowShouldClose(handle); }
+    VkExtent2D extent() { return { width, height }; }
+
     void create_window_surface(
         VkInstance instance, VkSurfaceKHR* surface, VkAllocationCallbacks* allocator);
 

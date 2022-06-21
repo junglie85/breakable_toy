@@ -41,15 +41,6 @@ void bt_window::init_window()
     if (!handle) {
         throw std::runtime_error("unable to create GLFW window");
     }
-
-    auto glad_vk_version = gladLoaderLoadVulkan(nullptr, nullptr, nullptr);
-    if (!glad_vk_version) {
-        throw std::runtime_error("unable to load Vulkan symbols, gladLoad failure");
-    }
-
-    auto major = GLAD_VERSION_MAJOR(glad_vk_version);
-    auto minor = GLAD_VERSION_MINOR(glad_vk_version);
-    SPDLOG_INFO("Vulkan version {}.{}", major, minor);
 }
 
 void bt_window::create_window_surface(

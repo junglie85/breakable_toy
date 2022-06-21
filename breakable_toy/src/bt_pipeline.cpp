@@ -21,12 +21,6 @@ bt_pipeline_config_info bt_pipeline::default_pipeline_config_info(uint32_t width
     config_info.scissor.offset = { 0, 0 };
     config_info.scissor.extent = { width, height };
 
-    config_info.viewport_info.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
-    config_info.viewport_info.viewportCount = 1;
-    config_info.viewport_info.pViewports = &config_info.viewport;
-    config_info.viewport_info.scissorCount = 1;
-    config_info.viewport_info.pScissors = &config_info.scissor;
-
     config_info.input_assembly_info.sType
         = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
     config_info.input_assembly_info.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
@@ -125,18 +119,16 @@ void bt_pipeline::create_graphics_pipeline(std::string_view vert_filepath,
     shader_stages[0].module = vert_shader_module;
     shader_stages[0].pName = "main";
     shader_stages[0].flags = 0;
-    shader_stages[0].pName = nullptr;
-    shader_stages[0].pSpecializationInfo = nullptr;
     shader_stages[0].pNext = nullptr;
+    shader_stages[0].pSpecializationInfo = nullptr;
 
     shader_stages[1].sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
     shader_stages[1].stage = VK_SHADER_STAGE_FRAGMENT_BIT;
     shader_stages[1].module = frag_shader_module;
     shader_stages[1].pName = "main";
     shader_stages[1].flags = 0;
-    shader_stages[1].pName = nullptr;
-    shader_stages[1].pSpecializationInfo = nullptr;
     shader_stages[1].pNext = nullptr;
+    shader_stages[1].pSpecializationInfo = nullptr;
 
     VkPipelineVertexInputStateCreateInfo vertex_input_info {
         VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO
@@ -146,12 +138,20 @@ void bt_pipeline::create_graphics_pipeline(std::string_view vert_filepath,
     vertex_input_info.pVertexAttributeDescriptions = nullptr;
     vertex_input_info.pVertexBindingDescriptions = nullptr;
 
+    VkPipelineViewportStateCreateInfo viewport_info {
+        VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO
+    };
+    viewport_info.viewportCount = 1;
+    viewport_info.pViewports = &config_info.viewport;
+    viewport_info.scissorCount = 1;
+    viewport_info.pScissors = &config_info.scissor;
+
     VkGraphicsPipelineCreateInfo pipeline_info { VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO };
     pipeline_info.stageCount = 2;
     pipeline_info.pStages = shader_stages;
     pipeline_info.pVertexInputState = &vertex_input_info;
     pipeline_info.pInputAssemblyState = &config_info.input_assembly_info;
-    pipeline_info.pViewportState = &config_info.viewport_info;
+    pipeline_info.pViewportState = &viewport_info;
     pipeline_info.pRasterizationState = &config_info.rasterisation_info;
     pipeline_info.pMultisampleState = &config_info.multisample_info;
     pipeline_info.pColorBlendState = &config_info.color_blend_info;
