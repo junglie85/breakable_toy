@@ -28,7 +28,13 @@ void app::run()
 
 void app::load_models()
 {
-    std::vector<bt_model::vertex> vertices { { { 0.0f, -0.5f } }, { { 0.5f, 0.5f } }, { { -0.5f, 0.5f } } };
+    std::vector<bt_model::vertex> vertices {
+        // clang-format off
+        {{ 0.0f, -0.5f }, { 1.0f, 0.0f, 0.0f }},
+        {{ 0.5f, 0.5f },  { 0.0f, 1.0f, 0.0f }},
+        {{ -0.5f, 0.5f }, { 0.0f, 0.0f, 1.0f }}
+        // clang-format on
+    };
     model = std::make_unique<bt_model>(device, vertices);
 }
 

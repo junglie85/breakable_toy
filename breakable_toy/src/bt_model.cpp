@@ -17,12 +17,17 @@ std::vector<VkVertexInputBindingDescription> bt_model::vertex::binding_descripti
 
 std::vector<VkVertexInputAttributeDescription> bt_model::vertex::attribute_descriptions()
 {
-    std::vector<VkVertexInputAttributeDescription> descriptions(1);
+    std::vector<VkVertexInputAttributeDescription> descriptions(2);
 
     descriptions[0].binding = 0;
     descriptions[0].location = 0;
     descriptions[0].format = VK_FORMAT_R32G32_SFLOAT;
-    descriptions[0].offset = 0;
+    descriptions[0].offset = offsetof(vertex, position);
+
+    descriptions[1].binding = 0;
+    descriptions[1].location = 1;
+    descriptions[1].format = VK_FORMAT_R32G32B32_SFLOAT;
+    descriptions[1].offset = offsetof(vertex, color);
 
     return descriptions;
 }

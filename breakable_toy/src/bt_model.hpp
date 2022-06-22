@@ -15,6 +15,7 @@ class bt_model {
   public:
     struct vertex {
         glm::vec2 position;
+        glm::vec3 color;
 
         static std::vector<VkVertexInputBindingDescription> binding_descriptions();
         static std::vector<VkVertexInputAttributeDescription> attribute_descriptions();
