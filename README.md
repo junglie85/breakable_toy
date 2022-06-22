@@ -1,5 +1,8 @@
 # Breakable Toy
 
+Initial Vulkan work based on [Little Vulkan Engine](https://github.com/blurrypiano/littleVulkanEngine) from
+[Brendan Galea's YouTube series](https://www.youtube.com/playlist?list=PL8327DO66nu9qYVKLDmdLW_84-yE4auCR).
+
 ## Development
 
 To clone:
@@ -14,8 +17,8 @@ To build (debug) and run (Windows):
 mkdir build-debug
 cd build-debug
 cmake -GNinja -DCMAKE_BUILD_TYPE=Debug ..\breakable_toy
-cmake --build .
-.\src\toy.exe
+cmake --build . --target toy
+.\bin\toy.exe
 ```
 
 To build (debug) and run (Linux/macOS):
@@ -24,6 +27,6 @@ To build (debug) and run (Linux/macOS):
 mkdir build-debug
 cd build-debug
 cmake -GNinja -DCMAKE_BUILD_TYPE=Debug ../breakable_toy
-cmake --build .
-./src/toy
+cmake --build . --target toy
+./bin/toy
 ```
