@@ -98,6 +98,11 @@ bt_pipeline::~bt_pipeline()
     vkDestroyPipeline(device.device(), graphics_pipeline, device.allocator());
 }
 
+void bt_pipeline::bind(VkCommandBuffer command_buffer)
+{
+    vkCmdBindPipeline(command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, graphics_pipeline);
+}
+
 void bt_pipeline::create_graphics_pipeline(std::string_view vert_filepath,
     std::string_view frag_filepath,
     const bt_pipeline_config_info config_info)

@@ -34,6 +34,8 @@ class bt_pipeline {
 
     void operator=(const bt_pipeline&) = delete;
 
+    void bind(VkCommandBuffer command_buffer);
+
   private:
     void create_graphics_pipeline(std::string_view vert_filepath,
         std::string_view frag_filepath,
