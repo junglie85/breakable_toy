@@ -6,6 +6,22 @@
 #include <stdexcept>
 
 namespace bt {
+void app::sierpinski(std::vector<bt_model::vertex>& vertices, int depth, glm::vec2 left, glm::vec2 right, glm::vec2 top)
+{
+    if (depth <= 0) {
+        vertices.push_back({ top });
+        vertices.push_back({ right });
+        vertices.push_back({ left });
+    } else {
+        auto left_top = 0.5f * (left + top);
+        auto right_top = 0.5f * (right + top);
+        auto left_right = 0.5f * (left + right);
+        sierpinski(vertices, depth - 1, left, left_right, left_top);
+        sierpinski(vertices, depth - 1, left_right, right, right_top);
+        sierpinski(vertices, depth - 1, left_top, right_top, top);
+    }
+}
+
 app::app()
 {
     load_models();
@@ -28,7 +44,8 @@ void app::run()
 
 void app::load_models()
 {
-    std::vector<bt_model::vertex> vertices { { { 0.0f, -0.5f } }, { { 0.5f, 0.5f } }, { { -0.5f, 0.5f } } };
+    std::vector<bt_model::vertex> vertices {};
+    sierpinski(vertices, 8, { -0.8f, 0.8f }, { 0.8f, 0.8f }, { 0.0f, -0.8f });
     model = std::make_unique<bt_model>(device, vertices);
 }
 
@@ -85,7 +102,7 @@ void app::create_command_buffers()
         render_pass_info.renderArea.extent = swapchain.swapchain_extent();
 
         std::array<VkClearValue, 2> clear_values {};
-        clear_values[0].color = { 0.1f, 0.1f, 0.1f, 1.0f };
+        clear_values[0].color = { 0.2f, 0.2f, 0.2f, 1.0f };
         clear_values[1].depthStencil = { 1.0f, 0 };
         render_pass_info.clearValueCount = static_cast<uint32_t>(clear_values.size());
         render_pass_info.pClearValues = clear_values.data();

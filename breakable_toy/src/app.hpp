@@ -13,6 +13,9 @@
 namespace bt {
 class app {
   public:
+    static void sierpinski(
+        std::vector<bt_model::vertex>& vertices, int depth, glm::vec2 left, glm::vec2 right, glm::vec2 top);
+
     static constexpr uint32_t WIDTH = 1280;
     static constexpr uint32_t HEIGHT = 720;
 
