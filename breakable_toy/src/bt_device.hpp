@@ -36,7 +36,7 @@ class bt_device {
     bt_device(bt_device&&) = delete;
     ~bt_device();
 
-    void operator=(const bt_device&) = delete;
+    bt_device& operator=(const bt_device&) = delete;
     bt_device& operator=(bt_device&&) = delete;
 
     VkAllocationCallbacks* allocator() { return allocator_; }

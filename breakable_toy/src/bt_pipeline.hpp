@@ -32,7 +32,7 @@ class bt_pipeline {
     bt_pipeline(const bt_pipeline&) = delete;
     ~bt_pipeline();
 
-    void operator=(const bt_pipeline&) = delete;
+    bt_pipeline& operator=(const bt_pipeline&) = delete;
 
     void bind(VkCommandBuffer command_buffer);
 

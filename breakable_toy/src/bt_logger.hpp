@@ -9,7 +9,12 @@ namespace bt {
 class bt_logger {
   public:
     bt_logger(spdlog::level::level_enum max_level);
+    bt_logger(const bt_logger&) = delete;
+    bt_logger(bt_logger&&) = delete;
     ~bt_logger();
+
+    bt_logger& operator=(const bt_logger&) = delete;
+    bt_logger& operator=(bt_logger&&) = delete;
 
   private:
     void init_logger();

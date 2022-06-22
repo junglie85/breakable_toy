@@ -17,7 +17,7 @@ class bt_swapchain {
     ~bt_swapchain();
 
     bt_swapchain(const bt_swapchain&) = delete;
-    void operator=(const bt_swapchain&) = delete;
+    bt_swapchain& operator=(const bt_swapchain&) = delete;
 
     VkFramebuffer framebuffer(int index) { return swapchain_framebuffers[index]; }
     VkRenderPass render_pass() { return render_pass_; }

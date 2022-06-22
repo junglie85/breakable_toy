@@ -14,6 +14,13 @@ class bt_filesystem {
     static std::vector<char> read_file(std::string_view filepath);
     static fs::path absolute_path_to(std::string_view filepath);
 
+    bt_filesystem(const bt_filesystem&) = delete;
+    bt_filesystem(bt_filesystem&&) = delete;
+    ~bt_filesystem() = default;
+
+    bt_filesystem& operator=(const bt_filesystem&) = delete;
+    bt_filesystem& operator=(bt_filesystem&&) = delete;
+
   private:
     bt_filesystem() = default;
 
