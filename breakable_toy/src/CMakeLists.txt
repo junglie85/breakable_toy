@@ -3,10 +3,13 @@ add_executable(toy
     bt_device.cpp
     bt_filesystem.cpp
     bt_logger.cpp
+    bt_model.cpp
     bt_pipeline.cpp
     bt_swapchain.cpp
     bt_window.cpp
     main.cpp)
+
+target_include_directories(toy PUBLIC .)
 
 target_link_libraries(toy PRIVATE fmt::fmt glad_vulkan_12 glfw glm spdlog::spdlog)
 

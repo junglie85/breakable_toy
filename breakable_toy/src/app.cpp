@@ -8,6 +8,7 @@
 namespace bt {
 app::app()
 {
+    load_models();
     create_pipeline_layout();
     create_pipeline();
     create_command_buffers();
@@ -23,6 +24,12 @@ void app::run()
     }
 
     vkDeviceWaitIdle(device.device());
+}
+
+void app::load_models()
+{
+    std::vector<bt_model::vertex> vertices { { { 0.0f, -0.5f } }, { { 0.5f, 0.5f } }, { { -0.5f, 0.5f } } };
+    model = std::make_unique<bt_model>(device, vertices);
 }
 
 void app::create_pipeline_layout()
@@ -84,8 +91,11 @@ void app::create_command_buffers()
         render_pass_info.pClearValues = clear_values.data();
 
         vkCmdBeginRenderPass(command_buffers[i], &render_pass_info, VK_SUBPASS_CONTENTS_INLINE);
+
         pipeline->bind(command_buffers[i]);
-        vkCmdDraw(command_buffers[i], 3, 1, 0, 0);
+        model->bind(command_buffers[i]);
+        model->draw(command_buffers[i]);
+
         vkCmdEndRenderPass(command_buffers[i]);
 
         if (vkEndCommandBuffer(command_buffers[i]) != VK_SUCCESS) {

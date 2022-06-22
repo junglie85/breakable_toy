@@ -2,6 +2,7 @@
 #define APP_HPP
 
 #include "bt_device.hpp"
+#include "bt_model.hpp"
 #include "bt_pipeline.hpp"
 #include "bt_swapchain.hpp"
 #include "bt_window.hpp"
@@ -24,6 +25,7 @@ class app {
     void run();
 
   private:
+    void load_models();
     void create_pipeline_layout();
     void create_pipeline();
     void create_command_buffers();
@@ -35,6 +37,7 @@ class app {
     std::unique_ptr<bt_pipeline> pipeline;
     VkPipelineLayout pipeline_layout;
     std::vector<VkCommandBuffer> command_buffers;
+    std::unique_ptr<bt_model> model;
 };
 } // namespace bt
 
