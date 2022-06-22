@@ -21,13 +21,11 @@ bt_pipeline_config_info bt_pipeline::default_pipeline_config_info(uint32_t width
     config_info.scissor.offset = { 0, 0 };
     config_info.scissor.extent = { width, height };
 
-    config_info.input_assembly_info.sType
-        = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
+    config_info.input_assembly_info.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
     config_info.input_assembly_info.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
     config_info.input_assembly_info.primitiveRestartEnable = VK_FALSE;
 
-    config_info.rasterisation_info.sType
-        = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
+    config_info.rasterisation_info.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
     config_info.rasterisation_info.depthClampEnable = VK_FALSE;
     config_info.rasterisation_info.rasterizerDiscardEnable = VK_FALSE;
     config_info.rasterisation_info.polygonMode = VK_POLYGON_MODE_FILL;
@@ -47,8 +45,8 @@ bt_pipeline_config_info bt_pipeline::default_pipeline_config_info(uint32_t width
     config_info.multisample_info.alphaToCoverageEnable = VK_FALSE;
     config_info.multisample_info.alphaToOneEnable = VK_FALSE;
 
-    config_info.color_blend_attachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT
-        | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
+    config_info.color_blend_attachment.colorWriteMask
+        = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
     config_info.color_blend_attachment.blendEnable = VK_FALSE;
     config_info.color_blend_attachment.srcColorBlendFactor = VK_BLEND_FACTOR_ONE;
     config_info.color_blend_attachment.dstColorBlendFactor = VK_BLEND_FACTOR_ZERO;
@@ -67,8 +65,7 @@ bt_pipeline_config_info bt_pipeline::default_pipeline_config_info(uint32_t width
     config_info.color_blend_info.blendConstants[2] = 0.0f;
     config_info.color_blend_info.blendConstants[3] = 0.0f;
 
-    config_info.depth_stencil_info.sType
-        = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
+    config_info.depth_stencil_info.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
     config_info.depth_stencil_info.depthTestEnable = VK_TRUE;
     config_info.depth_stencil_info.depthWriteEnable = VK_TRUE;
     config_info.depth_stencil_info.depthCompareOp = VK_COMPARE_OP_LESS;
@@ -103,9 +100,8 @@ void bt_pipeline::bind(VkCommandBuffer command_buffer)
     vkCmdBindPipeline(command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, graphics_pipeline);
 }
 
-void bt_pipeline::create_graphics_pipeline(std::string_view vert_filepath,
-    std::string_view frag_filepath,
-    const bt_pipeline_config_info config_info)
+void bt_pipeline::create_graphics_pipeline(
+    std::string_view vert_filepath, std::string_view frag_filepath, const bt_pipeline_config_info config_info)
 {
     assert(config_info.pipeline_layout != VK_NULL_HANDLE
         && "cannot create graphics pipeline - no pipeline_layout provided in config_info");
@@ -143,9 +139,7 @@ void bt_pipeline::create_graphics_pipeline(std::string_view vert_filepath,
     vertex_input_info.pVertexAttributeDescriptions = nullptr;
     vertex_input_info.pVertexBindingDescriptions = nullptr;
 
-    VkPipelineViewportStateCreateInfo viewport_info {
-        VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO
-    };
+    VkPipelineViewportStateCreateInfo viewport_info { VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO };
     viewport_info.viewportCount = 1;
     viewport_info.pViewports = &config_info.viewport;
     viewport_info.scissorCount = 1;
@@ -168,8 +162,7 @@ void bt_pipeline::create_graphics_pipeline(std::string_view vert_filepath,
     pipeline_info.basePipelineIndex = -1;
     pipeline_info.basePipelineHandle = VK_NULL_HANDLE;
 
-    if (vkCreateGraphicsPipelines(
-            device.device(), nullptr, 1, &pipeline_info, device.allocator(), &graphics_pipeline)
+    if (vkCreateGraphicsPipelines(device.device(), nullptr, 1, &pipeline_info, device.allocator(), &graphics_pipeline)
         != VK_SUCCESS) {
         throw std::runtime_error("failed to create graphics pipeline");
     }
@@ -181,8 +174,7 @@ void bt_pipeline::create_shader_module(const std::vector<char>& code, VkShaderMo
     create_info.codeSize = code.size();
     create_info.pCode = reinterpret_cast<const uint32_t*>(code.data());
 
-    if (vkCreateShaderModule(device.device(), &create_info, device.allocator(), shader_module)
-        != VK_SUCCESS) {
+    if (vkCreateShaderModule(device.device(), &create_info, device.allocator(), shader_module) != VK_SUCCESS) {
         throw std::runtime_error("failed to create shader module");
     }
 }

@@ -37,9 +37,8 @@ class bt_pipeline {
     void bind(VkCommandBuffer command_buffer);
 
   private:
-    void create_graphics_pipeline(std::string_view vert_filepath,
-        std::string_view frag_filepath,
-        const bt_pipeline_config_info config_info);
+    void create_graphics_pipeline(
+        std::string_view vert_filepath, std::string_view frag_filepath, const bt_pipeline_config_info config_info);
 
     void create_shader_module(const std::vector<char>& code, VkShaderModule* shader_module);
 

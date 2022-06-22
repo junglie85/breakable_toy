@@ -12,7 +12,8 @@
 
 namespace bt {
 bt_swapchain::bt_swapchain(bt_device& device, VkExtent2D extent) :
-    device { device }, window_extent { extent }
+    device { device },
+    window_extent { extent }
 {
     create_swapchain();
     create_image_views();
@@ -57,13 +58,18 @@ bt_swapchain::~bt_swapchain()
 
 VkResult bt_swapchain::acquire_next_image(uint32_t* image_index)
 {
-    vkWaitForFences(device.device(), 1, &in_flight_fences[current_frame], VK_TRUE,
+    vkWaitForFences(device.device(),
+        1,
+        &in_flight_fences[current_frame],
+        VK_TRUE,
         std::numeric_limits<uint64_t>::max());
 
-    VkResult result
-        = vkAcquireNextImageKHR(device.device(), swapchain, std::numeric_limits<uint64_t>::max(),
-            image_available_semaphores[current_frame], // must be a not signaled semaphore
-            VK_NULL_HANDLE, image_index);
+    VkResult result = vkAcquireNextImageKHR(device.device(),
+        swapchain,
+        std::numeric_limits<uint64_t>::max(),
+        image_available_semaphores[current_frame], // must be a not signaled semaphore
+        VK_NULL_HANDLE,
+        image_index);
 
     return result;
 }
@@ -91,8 +97,7 @@ VkResult bt_swapchain::submit_command_buffers(const VkCommandBuffer* buffers, ui
     submit_info.pSignalSemaphores = signal_semaphores;
 
     vkResetFences(device.device(), 1, &in_flight_fences[current_frame]);
-    if (vkQueueSubmit(device.graphics_queue(), 1, &submit_info, in_flight_fences[current_frame])
-        != VK_SUCCESS) {
+    if (vkQueueSubmit(device.graphics_queue(), 1, &submit_info, in_flight_fences[current_frame]) != VK_SUCCESS) {
         throw std::runtime_error("failed to submit draw command buffer");
     }
 
@@ -161,8 +166,7 @@ void bt_swapchain::create_swapchain()
         SPDLOG_CRITICAL("function is nullptr");
     }
 
-    if (vkCreateSwapchainKHR(device.device(), &create_info, device.allocator(), &swapchain)
-        != VK_SUCCESS) {
+    if (vkCreateSwapchainKHR(device.device(), &create_info, device.allocator(), &swapchain) != VK_SUCCESS) {
         throw std::runtime_error("failed to create swap chain");
     }
 
@@ -188,8 +192,7 @@ void bt_swapchain::create_image_views()
         view_info.subresourceRange.baseArrayLayer = 0;
         view_info.subresourceRange.layerCount = 1;
 
-        if (vkCreateImageView(
-                device.device(), &view_info, device.allocator(), &swapchain_image_views[i])
+        if (vkCreateImageView(device.device(), &view_info, device.allocator(), &swapchain_image_views[i])
             != VK_SUCCESS) {
             throw std::runtime_error("failed to create texture image view");
         }
@@ -235,13 +238,12 @@ void bt_swapchain::create_render_pass()
     VkSubpassDependency dependency = {};
     dependency.srcSubpass = VK_SUBPASS_EXTERNAL;
     dependency.srcAccessMask = 0;
-    dependency.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT
-        | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
+    dependency.srcStageMask
+        = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
     dependency.dstSubpass = 0;
-    dependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT
-        | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
-    dependency.dstAccessMask
-        = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+    dependency.dstStageMask
+        = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
+    dependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
 
     std::array<VkAttachmentDescription, 2> attachments = { color_attachment, depth_attachment };
 
@@ -253,8 +255,7 @@ void bt_swapchain::create_render_pass()
     render_pass_info.dependencyCount = 1;
     render_pass_info.pDependencies = &dependency;
 
-    if (vkCreateRenderPass(device.device(), &render_pass_info, device.allocator(), &render_pass_)
-        != VK_SUCCESS) {
+    if (vkCreateRenderPass(device.device(), &render_pass_info, device.allocator(), &render_pass_) != VK_SUCCESS) {
         throw std::runtime_error("failed to create render pass");
     }
 }
@@ -275,8 +276,7 @@ void bt_swapchain::create_framebuffers()
         framebuffer_info.height = extent.height;
         framebuffer_info.layers = 1;
 
-        if (vkCreateFramebuffer(
-                device.device(), &framebuffer_info, device.allocator(), &swapchain_framebuffers[i])
+        if (vkCreateFramebuffer(device.device(), &framebuffer_info, device.allocator(), &swapchain_framebuffers[i])
             != VK_SUCCESS) {
             throw std::runtime_error("failed to create framebuffer");
         }
@@ -308,8 +308,10 @@ void bt_swapchain::create_depth_resources()
         image_info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
         image_info.flags = 0;
 
-        device.create_image_with_info(image_info, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
-            depth_images[i], depth_image_memorys[i]);
+        device.create_image_with_info(image_info,
+            VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
+            depth_images[i],
+            depth_image_memorys[i]);
 
         VkImageViewCreateInfo view_info { VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO };
         view_info.image = depth_images[i];
@@ -321,9 +323,7 @@ void bt_swapchain::create_depth_resources()
         view_info.subresourceRange.baseArrayLayer = 0;
         view_info.subresourceRange.layerCount = 1;
 
-        if (vkCreateImageView(
-                device.device(), &view_info, device.allocator(), &depth_image_views[i])
-            != VK_SUCCESS) {
+        if (vkCreateImageView(device.device(), &view_info, device.allocator(), &depth_image_views[i]) != VK_SUCCESS) {
             throw std::runtime_error("failed to create texture image view");
         }
     }
@@ -342,21 +342,17 @@ void bt_swapchain::create_sync_objects()
     fence_info.flags = VK_FENCE_CREATE_SIGNALED_BIT;
 
     for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
-        if (vkCreateSemaphore(device.device(), &semaphore_info, device.allocator(),
-                &image_available_semaphores[i])
+        if (vkCreateSemaphore(device.device(), &semaphore_info, device.allocator(), &image_available_semaphores[i])
                 != VK_SUCCESS
-            || vkCreateSemaphore(device.device(), &semaphore_info, device.allocator(),
-                   &render_finished_semaphores[i])
+            || vkCreateSemaphore(device.device(), &semaphore_info, device.allocator(), &render_finished_semaphores[i])
                 != VK_SUCCESS
-            || vkCreateFence(device.device(), &fence_info, device.allocator(), &in_flight_fences[i])
-                != VK_SUCCESS) {
+            || vkCreateFence(device.device(), &fence_info, device.allocator(), &in_flight_fences[i]) != VK_SUCCESS) {
             throw std::runtime_error("failed to create synchronization objects for a frame");
         }
     }
 }
 
-VkSurfaceFormatKHR bt_swapchain::choose_swap_surface_format(
-    const std::vector<VkSurfaceFormatKHR>& available_formats)
+VkSurfaceFormatKHR bt_swapchain::choose_swap_surface_format(const std::vector<VkSurfaceFormatKHR>& available_formats)
 {
     for (const auto& available_format : available_formats) {
         if (available_format.format == VK_FORMAT_B8G8R8A8_UNORM
@@ -368,8 +364,7 @@ VkSurfaceFormatKHR bt_swapchain::choose_swap_surface_format(
     return available_formats[0];
 }
 
-VkPresentModeKHR bt_swapchain::choose_swap_present_mode(
-    const std::vector<VkPresentModeKHR>& available_present_modes)
+VkPresentModeKHR bt_swapchain::choose_swap_present_mode(const std::vector<VkPresentModeKHR>& available_present_modes)
 {
     // for (const auto& available_present_mode : available_present_modes) {
     //     if (available_present_mode == VK_PRESENT_MODE_MAILBOX_KHR) {
@@ -408,6 +403,7 @@ VkFormat bt_swapchain::find_depth_format()
 {
     return device.find_supported_format(
         { VK_FORMAT_D32_SFLOAT, VK_FORMAT_D32_SFLOAT_S8_UINT, VK_FORMAT_D24_UNORM_S8_UINT },
-        VK_IMAGE_TILING_OPTIMAL, VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT);
+        VK_IMAGE_TILING_OPTIMAL,
+        VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT);
 }
 } // namespace bt

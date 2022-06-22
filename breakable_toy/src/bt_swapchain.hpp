@@ -30,8 +30,7 @@ class bt_swapchain {
 
     float extent_aspect_ratio()
     {
-        return static_cast<float>(swapchain_extent_.width)
-            / static_cast<float>(swapchain_extent_.height);
+        return static_cast<float>(swapchain_extent_.width) / static_cast<float>(swapchain_extent_.height);
     }
 
     VkFormat find_depth_format();
@@ -46,10 +45,8 @@ class bt_swapchain {
     void create_framebuffers();
     void create_sync_objects();
 
-    VkSurfaceFormatKHR choose_swap_surface_format(
-        const std::vector<VkSurfaceFormatKHR>& available_formats);
-    VkPresentModeKHR choose_swap_present_mode(
-        const std::vector<VkPresentModeKHR>& available_present_modes);
+    VkSurfaceFormatKHR choose_swap_surface_format(const std::vector<VkSurfaceFormatKHR>& available_formats);
+    VkPresentModeKHR choose_swap_present_mode(const std::vector<VkPresentModeKHR>& available_present_modes);
     VkExtent2D choose_swap_extent(const VkSurfaceCapabilitiesKHR& capabilities);
 
     VkFormat swapchain_image_format_;

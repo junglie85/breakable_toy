@@ -4,7 +4,8 @@
 
 namespace bt {
 bt_logger::bt_logger(spdlog::level::level_enum max_level) :
-    max_level { max_level }, logger_name("BT")
+    max_level { max_level },
+    logger_name("BT")
 {
     init_logger();
 }

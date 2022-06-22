@@ -6,7 +6,9 @@
 
 namespace bt {
 bt_window::bt_window(uint32_t width, uint32_t height, std::string name) :
-    width { width }, height { height }, window_name { std::move(name) }
+    width { width },
+    height { height },
+    window_name { std::move(name) }
 {
     init_window();
 }
@@ -21,9 +23,8 @@ bt_window::~bt_window()
 
 void bt_window::init_window()
 {
-    glfwSetErrorCallback([](int code, const char* description) {
-        SPDLOG_ERROR("GLFW error (code {}): {}", code, description);
-    });
+    glfwSetErrorCallback(
+        [](int code, const char* description) { SPDLOG_ERROR("GLFW error (code {}): {}", code, description); });
 
     glfwInitVulkanLoader(vkGetInstanceProcAddr);
 
@@ -43,8 +44,7 @@ void bt_window::init_window()
     }
 }
 
-void bt_window::create_window_surface(
-    VkInstance instance, VkSurfaceKHR* surface, VkAllocationCallbacks* allocator)
+void bt_window::create_window_surface(VkInstance instance, VkSurfaceKHR* surface, VkAllocationCallbacks* allocator)
 {
     if (glfwCreateWindowSurface(instance, handle, allocator, surface) != VK_SUCCESS) {
         throw std::runtime_error("failed to create window surface");

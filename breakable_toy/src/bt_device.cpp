@@ -8,13 +8,14 @@
 #include <unordered_set>
 
 namespace bt {
-static VKAPI_ATTR VkBool32 VKAPI_CALL debug_messenger_callback(
-    VkDebugUtilsMessageSeverityFlagBitsEXT message_severity,
+static VKAPI_ATTR VkBool32 VKAPI_CALL debug_messenger_callback(VkDebugUtilsMessageSeverityFlagBitsEXT message_severity,
     VkDebugUtilsMessageTypeFlagsEXT message_type,
     const VkDebugUtilsMessengerCallbackDataEXT* callback_data,
     void* user_data)
 {
-    SPDLOG_ERROR("{} - {} - {}", callback_data->messageIdNumber, callback_data->pMessageIdName,
+    SPDLOG_ERROR("{} - {} - {}",
+        callback_data->messageIdNumber,
+        callback_data->pMessageIdName,
         callback_data->pMessage);
 
     return VK_FALSE;
@@ -25,8 +26,7 @@ VkResult create_debug_utils_messenger_ext(VkInstance instance,
     const VkAllocationCallbacks* allocator,
     VkDebugUtilsMessengerEXT* debug_messenger)
 {
-    auto func = (PFN_vkCreateDebugUtilsMessengerEXT)vkGetInstanceProcAddr(
-        instance, "vkCreateDebugUtilsMessengerEXT");
+    auto func = (PFN_vkCreateDebugUtilsMessengerEXT)vkGetInstanceProcAddr(instance, "vkCreateDebugUtilsMessengerEXT");
     if (func != nullptr) {
         return func(instance, create_info, allocator, debug_messenger);
     } else {
@@ -34,18 +34,17 @@ VkResult create_debug_utils_messenger_ext(VkInstance instance,
     }
 }
 
-void destroy_debug_utils_messenger_ext(VkInstance instance,
-    VkDebugUtilsMessengerEXT debug_messenger,
-    const VkAllocationCallbacks* allocator)
+void destroy_debug_utils_messenger_ext(
+    VkInstance instance, VkDebugUtilsMessengerEXT debug_messenger, const VkAllocationCallbacks* allocator)
 {
-    auto func = (PFN_vkDestroyDebugUtilsMessengerEXT)vkGetInstanceProcAddr(
-        instance, "vkDestroyDebugUtilsMessengerEXT");
+    auto func = (PFN_vkDestroyDebugUtilsMessengerEXT)vkGetInstanceProcAddr(instance, "vkDestroyDebugUtilsMessengerEXT");
     if (func != nullptr) {
         func(instance, debug_messenger, allocator);
     }
 }
 
-bt_device::bt_device(bt_window& window) : window { window }
+bt_device::bt_device(bt_window& window)
+    : window { window }
 {
     load_vulkan_function_pointers(nullptr, nullptr, nullptr);
     create_instance();
@@ -72,8 +71,7 @@ bt_device::~bt_device()
     vkDestroyInstance(instance, allocator_);
 }
 
-void bt_device::load_vulkan_function_pointers(
-    VkInstance instance, VkPhysicalDevice physical_device, VkDevice device)
+void bt_device::load_vulkan_function_pointers(VkInstance instance, VkPhysicalDevice physical_device, VkDevice device)
 {
     auto glad_vk_version = gladLoaderLoadVulkan(instance, physical_device, device);
     if (!glad_vk_version) {
@@ -170,8 +168,7 @@ void bt_device::create_logical_device()
     VkPhysicalDeviceFeatures device_features = {};
     device_features.samplerAnisotropy = VK_TRUE;
 
-    std::vector<const char*> required_device_extensions
-        = get_required_device_extensions(physical_device);
+    std::vector<const char*> required_device_extensions = get_required_device_extensions(physical_device);
 
     VkDeviceCreateInfo create_info = { VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO };
     create_info.queueCreateInfoCount = static_cast<uint32_t>(queue_create_infos.size());
@@ -201,8 +198,7 @@ void bt_device::create_command_pool()
 
     VkCommandPoolCreateInfo pool_info = { VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO };
     pool_info.queueFamilyIndex = queue_family_indices.graphics;
-    pool_info.flags
-        = VK_COMMAND_POOL_CREATE_TRANSIENT_BIT | VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
+    pool_info.flags = VK_COMMAND_POOL_CREATE_TRANSIENT_BIT | VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
 
     if (vkCreateCommandPool(device_, &pool_info, allocator_, &command_pool_) != VK_SUCCESS) {
         throw std::runtime_error("failed to create command pool");
@@ -220,26 +216,22 @@ bool bt_device::is_device_suitable(VkPhysicalDevice device)
     bool swapchain_adequate = false;
     if (extensions_supported) {
         swapchain_support_details swapchain_support = query_swapchain_support(device);
-        swapchain_adequate
-            = !swapchain_support.formats.empty() && !swapchain_support.present_modes.empty();
+        swapchain_adequate = !swapchain_support.formats.empty() && !swapchain_support.present_modes.empty();
     }
 
     VkPhysicalDeviceFeatures supported_features;
     vkGetPhysicalDeviceFeatures(device, &supported_features);
 
-    return indices.isComplete() && extensions_supported && swapchain_adequate
-        && supported_features.samplerAnisotropy;
+    return indices.isComplete() && extensions_supported && swapchain_adequate && supported_features.samplerAnisotropy;
 }
 
-void bt_device::populate_debug_messenger_create_info(
-    VkDebugUtilsMessengerCreateInfoEXT& create_info)
+void bt_device::populate_debug_messenger_create_info(VkDebugUtilsMessengerCreateInfoEXT& create_info)
 {
     create_info = { VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT };
-    create_info.messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT
-        | VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
+    create_info.messageSeverity
+        = VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
     create_info.messageType = VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT
-        | VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT
-        | VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
+        | VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
     create_info.pfnUserCallback = debug_messenger_callback;
     create_info.pUserData = nullptr;
 }
@@ -252,8 +244,7 @@ void bt_device::setup_debug_messenger()
 
     VkDebugUtilsMessengerCreateInfoEXT create_info;
     populate_debug_messenger_create_info(create_info);
-    if (create_debug_utils_messenger_ext(instance, &create_info, allocator_, &debug_messenger)
-        != VK_SUCCESS) {
+    if (create_debug_utils_messenger_ext(instance, &create_info, allocator_, &debug_messenger) != VK_SUCCESS) {
         throw std::runtime_error("failed to set up debug messenger");
     }
 }
@@ -316,15 +307,13 @@ std::vector<const char*> bt_device::get_required_device_extensions(VkPhysicalDev
     vkEnumerateDeviceExtensionProperties(device, nullptr, &extension_count, nullptr);
 
     std::vector<VkExtensionProperties> available_extensions(extension_count);
-    vkEnumerateDeviceExtensionProperties(
-        device, nullptr, &extension_count, available_extensions.data());
+    vkEnumerateDeviceExtensionProperties(device, nullptr, &extension_count, available_extensions.data());
 
     std::vector<const char*> required_extensions = { VK_KHR_SWAPCHAIN_EXTENSION_NAME };
 
-    bool requires_portability_subset = std::any_of(
-        available_extensions.begin(), available_extensions.end(), [](const auto& available) {
-            return strcmp(available.extensionName, "VK_KHR_portability_subset") == 0;
-        });
+    bool requires_portability_subset = std::any_of(available_extensions.begin(),
+        available_extensions.end(),
+        [](const auto& available) { return strcmp(available.extensionName, "VK_KHR_portability_subset") == 0; });
 
     if (requires_portability_subset) {
         required_extensions.push_back("VK_KHR_portability_subset");
@@ -363,8 +352,7 @@ bool bt_device::check_device_extension_support(VkPhysicalDevice device)
     vkEnumerateDeviceExtensionProperties(device, nullptr, &extension_count, nullptr);
 
     std::vector<VkExtensionProperties> available_extensions(extension_count);
-    vkEnumerateDeviceExtensionProperties(
-        device, nullptr, &extension_count, available_extensions.data());
+    vkEnumerateDeviceExtensionProperties(device, nullptr, &extension_count, available_extensions.data());
 
     std::vector<const char*> required = get_required_device_extensions(device);
     std::set<std::string> required_extensions(required.begin(), required.end());
@@ -420,8 +408,7 @@ swapchain_support_details bt_device::query_swapchain_support(VkPhysicalDevice de
 
     if (format_count != 0) {
         details.formats.resize(format_count);
-        vkGetPhysicalDeviceSurfaceFormatsKHR(
-            device, surface_, &format_count, details.formats.data());
+        vkGetPhysicalDeviceSurfaceFormatsKHR(device, surface_, &format_count, details.formats.data());
     }
 
     uint32_t present_mode_count;
@@ -429,8 +416,7 @@ swapchain_support_details bt_device::query_swapchain_support(VkPhysicalDevice de
 
     if (present_mode_count != 0) {
         details.present_modes.resize(present_mode_count);
-        vkGetPhysicalDeviceSurfacePresentModesKHR(
-            device, surface_, &present_mode_count, details.present_modes.data());
+        vkGetPhysicalDeviceSurfacePresentModesKHR(device, surface_, &present_mode_count, details.present_modes.data());
     }
 
     return details;
@@ -443,11 +429,9 @@ VkFormat bt_device::find_supported_format(
         VkFormatProperties props;
         vkGetPhysicalDeviceFormatProperties(physical_device, format, &props);
 
-        if (tiling == VK_IMAGE_TILING_LINEAR
-            && (props.linearTilingFeatures & features) == features) {
+        if (tiling == VK_IMAGE_TILING_LINEAR && (props.linearTilingFeatures & features) == features) {
             return format;
-        } else if (tiling == VK_IMAGE_TILING_OPTIMAL
-            && (props.optimalTilingFeatures & features) == features) {
+        } else if (tiling == VK_IMAGE_TILING_OPTIMAL && (props.optimalTilingFeatures & features) == features) {
             return format;
         }
     }
@@ -460,8 +444,7 @@ uint32_t bt_device::find_memory_type(uint32_t type_filter, VkMemoryPropertyFlags
     VkPhysicalDeviceMemoryProperties mem_properties;
     vkGetPhysicalDeviceMemoryProperties(physical_device, &mem_properties);
     for (uint32_t i = 0; i < mem_properties.memoryTypeCount; i++) {
-        if ((type_filter & (1 << i))
-            && (mem_properties.memoryTypes[i].propertyFlags & properties) == properties) {
+        if ((type_filter & (1 << i)) && (mem_properties.memoryTypes[i].propertyFlags & properties) == properties) {
             return i;
         }
     }
@@ -560,15 +543,12 @@ void bt_device::copy_buffer_to_image(
     region.imageOffset = { 0, 0, 0 };
     region.imageExtent = { width, height, 1 };
 
-    vkCmdCopyBufferToImage(
-        command_buffer, buffer, image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &region);
+    vkCmdCopyBufferToImage(command_buffer, buffer, image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &region);
     end_single_time_commands(command_buffer);
 }
 
-void bt_device::create_image_with_info(const VkImageCreateInfo& image_info,
-    VkMemoryPropertyFlags properties,
-    VkImage& image,
-    VkDeviceMemory& image_memory)
+void bt_device::create_image_with_info(
+    const VkImageCreateInfo& image_info, VkMemoryPropertyFlags properties, VkImage& image, VkDeviceMemory& image_memory)
 {
     if (vkCreateImage(device_, &image_info, allocator_, &image) != VK_SUCCESS) {
         throw std::runtime_error("failed to create image");
