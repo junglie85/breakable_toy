@@ -15,12 +15,18 @@ bt_swapchain::bt_swapchain(bt_device& device, VkExtent2D extent) :
     device { device },
     window_extent { extent }
 {
-    create_swapchain();
-    create_image_views();
-    create_render_pass();
-    create_depth_resources();
-    create_framebuffers();
-    create_sync_objects();
+    init();
+}
+
+bt_swapchain::bt_swapchain(bt_device& device, VkExtent2D extent, std::shared_ptr<bt_swapchain> previous) :
+    device { device },
+    window_extent { extent },
+    old_swapchain { previous }
+{
+    init();
+
+    // old_swapchain is only needed during initialisation, so set it back to nullptr here to remove the reference count.
+    old_swapchain = nullptr;
 }
 
 bt_swapchain::~bt_swapchain()
@@ -118,6 +124,16 @@ VkResult bt_swapchain::submit_command_buffers(const VkCommandBuffer* buffers, ui
     return result;
 }
 
+void bt_swapchain::init()
+{
+    create_swapchain();
+    create_image_views();
+    create_render_pass();
+    create_depth_resources();
+    create_framebuffers();
+    create_sync_objects();
+}
+
 void bt_swapchain::create_swapchain()
 {
     swapchain_support_details swapchain_support = device.swapchain_support();
@@ -160,7 +176,7 @@ void bt_swapchain::create_swapchain()
     create_info.presentMode = present_mode;
     create_info.clipped = VK_TRUE;
 
-    create_info.oldSwapchain = VK_NULL_HANDLE;
+    create_info.oldSwapchain = old_swapchain == nullptr ? VK_NULL_HANDLE : old_swapchain->swapchain;
 
     if (!vkCreateSwapchainKHR) {
         SPDLOG_CRITICAL("function is nullptr");

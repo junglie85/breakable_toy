@@ -8,14 +8,19 @@
 
 namespace bt {
 struct bt_pipeline_config_info {
-    VkViewport viewport;
-    VkRect2D scissor;
+    bt_pipeline_config_info() = default;
+    bt_pipeline_config_info(const bt_pipeline_config_info&) = delete;
+    bt_pipeline_config_info& operator=(const bt_pipeline_config_info&) = delete;
+
+    VkPipelineViewportStateCreateInfo viewport_info;
     VkPipelineInputAssemblyStateCreateInfo input_assembly_info;
     VkPipelineRasterizationStateCreateInfo rasterisation_info;
     VkPipelineMultisampleStateCreateInfo multisample_info;
     VkPipelineColorBlendAttachmentState color_blend_attachment;
     VkPipelineColorBlendStateCreateInfo color_blend_info;
     VkPipelineDepthStencilStateCreateInfo depth_stencil_info;
+    std::vector<VkDynamicState> dynamic_state_enables;
+    VkPipelineDynamicStateCreateInfo dynamic_state_info;
     VkPipelineLayout pipeline_layout = nullptr;
     VkRenderPass render_pass = nullptr;
     uint32_t subpass = 0;
@@ -23,12 +28,12 @@ struct bt_pipeline_config_info {
 
 class bt_pipeline {
   public:
-    static bt_pipeline_config_info default_pipeline_config_info(uint32_t width, uint32_t height);
+    static void default_pipeline_config_info(bt_pipeline_config_info& config_info);
 
     bt_pipeline(bt_device& device,
         std::string_view vert_filepath,
         std::string_view frag_filepath,
-        const bt_pipeline_config_info config_info);
+        const bt_pipeline_config_info& config_info);
     bt_pipeline(const bt_pipeline&) = delete;
     ~bt_pipeline();
 
@@ -38,7 +43,7 @@ class bt_pipeline {
 
   private:
     void create_graphics_pipeline(
-        std::string_view vert_filepath, std::string_view frag_filepath, const bt_pipeline_config_info config_info);
+        std::string_view vert_filepath, std::string_view frag_filepath, const bt_pipeline_config_info& config_info);
 
     void create_shader_module(const std::vector<char>& code, VkShaderModule* shader_module);
 

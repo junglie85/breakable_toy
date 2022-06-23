@@ -37,11 +37,20 @@ void bt_window::init_window()
     }
 
     glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-    glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
+    glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
     handle = glfwCreateWindow(width, height, window_name.c_str(), nullptr, nullptr);
     if (!handle) {
         throw std::runtime_error("unable to create GLFW window");
     }
+
+    glfwSetWindowUserPointer(handle, this);
+
+    glfwSetFramebufferSizeCallback(handle, [](GLFWwindow* handle, int width, int height) {
+        auto window = reinterpret_cast<bt_window*>(glfwGetWindowUserPointer(handle));
+        window->framebuffer_resized = true;
+        window->width = static_cast<uint32_t>(width);
+        window->height = static_cast<uint32_t>(height);
+    });
 }
 
 void bt_window::create_window_surface(VkInstance instance, VkSurfaceKHR* surface, VkAllocationCallbacks* allocator)

@@ -29,11 +29,14 @@ class app {
     void create_pipeline_layout();
     void create_pipeline();
     void create_command_buffers();
+    void free_command_buffers();
     void draw_frame();
+    void recreate_swapchain();
+    void record_command_buffer(uint32_t image_index);
 
     bt_window window { WIDTH, HEIGHT, "Breakable Toy" };
     bt_device device { window };
-    bt_swapchain swapchain { device, window.extent() };
+    std::unique_ptr<bt_swapchain> swapchain;
     std::unique_ptr<bt_pipeline> pipeline;
     VkPipelineLayout pipeline_layout;
     std::vector<VkCommandBuffer> command_buffers;

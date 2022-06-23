@@ -5,6 +5,7 @@
 
 #include <glad/vulkan.h>
 
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -14,6 +15,7 @@ class bt_swapchain {
     static constexpr int MAX_FRAMES_IN_FLIGHT = 2;
 
     bt_swapchain(bt_device& device, VkExtent2D window_extent);
+    bt_swapchain(bt_device& device, VkExtent2D window_extent, std::shared_ptr<bt_swapchain> previous);
     ~bt_swapchain();
 
     bt_swapchain(const bt_swapchain&) = delete;
@@ -38,6 +40,7 @@ class bt_swapchain {
     VkResult submit_command_buffers(const VkCommandBuffer* buffers, uint32_t* image_index);
 
   private:
+    void init();
     void create_swapchain();
     void create_image_views();
     void create_depth_resources();
@@ -61,6 +64,7 @@ class bt_swapchain {
     bt_device& device;
     VkExtent2D window_extent;
     VkSwapchainKHR swapchain;
+    std::shared_ptr<bt_swapchain> old_swapchain;
     std::vector<VkSemaphore> image_available_semaphores;
     std::vector<VkSemaphore> render_finished_semaphores;
     std::vector<VkFence> in_flight_fences;

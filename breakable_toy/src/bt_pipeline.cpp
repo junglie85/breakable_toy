@@ -8,19 +8,13 @@
 #include <stdexcept>
 
 namespace bt {
-bt_pipeline_config_info bt_pipeline::default_pipeline_config_info(uint32_t width, uint32_t height)
+void bt_pipeline::default_pipeline_config_info(bt_pipeline_config_info& config_info)
 {
-    bt_pipeline_config_info config_info {};
-
-    config_info.viewport.x = 0.0f;
-    config_info.viewport.y = 0.0f;
-    config_info.viewport.width = static_cast<float>(width);
-    config_info.viewport.height = static_cast<float>(height);
-    config_info.viewport.minDepth = 0.0f;
-    config_info.viewport.maxDepth = 1.0f;
-
-    config_info.scissor.offset = { 0, 0 };
-    config_info.scissor.extent = { width, height };
+    config_info.viewport_info.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
+    config_info.viewport_info.viewportCount = 1;
+    config_info.viewport_info.pViewports = nullptr;
+    config_info.viewport_info.scissorCount = 1;
+    config_info.viewport_info.pScissors = nullptr;
 
     config_info.input_assembly_info.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
     config_info.input_assembly_info.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
@@ -77,13 +71,17 @@ bt_pipeline_config_info bt_pipeline::default_pipeline_config_info(uint32_t width
     config_info.depth_stencil_info.front = {};
     config_info.depth_stencil_info.back = {};
 
-    return config_info;
+    config_info.dynamic_state_enables = { VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_SCISSOR };
+    config_info.dynamic_state_info.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
+    config_info.dynamic_state_info.pDynamicStates = config_info.dynamic_state_enables.data();
+    config_info.dynamic_state_info.dynamicStateCount = static_cast<uint32_t>(config_info.dynamic_state_enables.size());
+    config_info.dynamic_state_info.flags = 0;
 }
 
 bt_pipeline::bt_pipeline(bt_device& device,
     std::string_view vert_filepath,
     std::string_view frag_filepath,
-    const bt_pipeline_config_info config_info) :
+    const bt_pipeline_config_info& config_info) :
     device { device }
 {
     create_graphics_pipeline(vert_filepath, frag_filepath, config_info);
@@ -102,7 +100,7 @@ void bt_pipeline::bind(VkCommandBuffer command_buffer)
 }
 
 void bt_pipeline::create_graphics_pipeline(
-    std::string_view vert_filepath, std::string_view frag_filepath, const bt_pipeline_config_info config_info)
+    std::string_view vert_filepath, std::string_view frag_filepath, const bt_pipeline_config_info& config_info)
 {
     assert(config_info.pipeline_layout != VK_NULL_HANDLE
         && "cannot create graphics pipeline - no pipeline_layout provided in config_info");
@@ -142,23 +140,17 @@ void bt_pipeline::create_graphics_pipeline(
     vertex_input_info.pVertexAttributeDescriptions = attribute_descriptions.data();
     vertex_input_info.pVertexBindingDescriptions = binding_descriptions.data();
 
-    VkPipelineViewportStateCreateInfo viewport_info { VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO };
-    viewport_info.viewportCount = 1;
-    viewport_info.pViewports = &config_info.viewport;
-    viewport_info.scissorCount = 1;
-    viewport_info.pScissors = &config_info.scissor;
-
     VkGraphicsPipelineCreateInfo pipeline_info { VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO };
     pipeline_info.stageCount = 2;
     pipeline_info.pStages = shader_stages;
     pipeline_info.pVertexInputState = &vertex_input_info;
     pipeline_info.pInputAssemblyState = &config_info.input_assembly_info;
-    pipeline_info.pViewportState = &viewport_info;
+    pipeline_info.pViewportState = &config_info.viewport_info;
     pipeline_info.pRasterizationState = &config_info.rasterisation_info;
     pipeline_info.pMultisampleState = &config_info.multisample_info;
     pipeline_info.pColorBlendState = &config_info.color_blend_info;
     pipeline_info.pDepthStencilState = &config_info.depth_stencil_info;
-    pipeline_info.pDynamicState = nullptr;
+    pipeline_info.pDynamicState = &config_info.dynamic_state_info;
     pipeline_info.layout = config_info.pipeline_layout;
     pipeline_info.renderPass = config_info.render_pass;
     pipeline_info.subpass = config_info.subpass;

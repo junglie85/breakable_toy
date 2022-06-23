@@ -19,14 +19,17 @@ class bt_window {
 
     bool should_close() { return glfwWindowShouldClose(handle); }
     VkExtent2D extent() { return { width, height }; }
+    bool was_resized() { return framebuffer_resized; }
+    void reset_resized_flag() { framebuffer_resized = false; }
 
     void create_window_surface(VkInstance instance, VkSurfaceKHR* surface, VkAllocationCallbacks* allocator);
 
   private:
     void init_window();
 
-    const uint32_t width;
-    const uint32_t height;
+    uint32_t width;
+    uint32_t height;
+    bool framebuffer_resized = false;
     std::string window_name;
     GLFWwindow* handle;
 };
