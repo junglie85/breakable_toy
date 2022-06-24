@@ -2,11 +2,9 @@
 #define BT_MODEL_HPP
 
 #include "bt_device.hpp"
+#include "bt_maths.hpp"
 
 #include <glad/vulkan.h>
-#define GLM_FORCE_RADIANS
-#define GLM_FORCE_DEPTH_ZERO_TO_ONE
-#include <glm/glm.hpp>
 
 #include <vector>
 

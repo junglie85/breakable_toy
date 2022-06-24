@@ -1,12 +1,18 @@
 #include "app.hpp"
 
 #include "bt_logger.hpp"
+#include "bt_maths.hpp"
 
 #include <array>
 #include <cassert>
 #include <stdexcept>
 
 namespace bt {
+struct push_constant_data {
+    alignas(8) glm::vec2 offset;
+    alignas(16) glm::vec3 color;
+};
+
 app::app()
 {
     load_models();
@@ -42,11 +48,16 @@ void app::load_models()
 
 void app::create_pipeline_layout()
 {
+    VkPushConstantRange push_constant_range {};
+    push_constant_range.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
+    push_constant_range.offset = 0;
+    push_constant_range.size = sizeof(push_constant_data);
+
     VkPipelineLayoutCreateInfo pipeline_layout_info { VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO };
     pipeline_layout_info.setLayoutCount = 0;
     pipeline_layout_info.pSetLayouts = nullptr;
-    pipeline_layout_info.pushConstantRangeCount = 0;
-    pipeline_layout_info.pPushConstantRanges = nullptr;
+    pipeline_layout_info.pushConstantRangeCount = 1;
+    pipeline_layout_info.pPushConstantRanges = &push_constant_range;
 
     if (vkCreatePipelineLayout(device.device(), &pipeline_layout_info, device.allocator(), &pipeline_layout)
         != VK_SUCCESS) {
@@ -146,6 +157,9 @@ void app::recreate_swapchain()
 
 void app::record_command_buffer(uint32_t image_index)
 {
+    static int frame = 0;
+    frame = (frame + 1) % 100;
+
     VkCommandBufferBeginInfo begin_info { VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO };
 
     if (vkBeginCommandBuffer(command_buffers[image_index], &begin_info) != VK_SUCCESS) {
@@ -179,7 +193,21 @@ void app::record_command_buffer(uint32_t image_index)
 
     pipeline->bind(command_buffers[image_index]);
     model->bind(command_buffers[image_index]);
-    model->draw(command_buffers[image_index]);
+
+    for (auto j = 0; j < 4; j++) {
+        push_constant_data push {};
+        push.offset = { -0.5f + static_cast<float>(frame) * 0.02f, -0.4f + static_cast<float>(j) * 0.25f };
+        push.color = { 0.0f, 0.0f, 0.2f + 0.2f * static_cast<float>(j) };
+
+        vkCmdPushConstants(command_buffers[image_index],
+            pipeline_layout,
+            VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
+            0,
+            sizeof(push_constant_data),
+            &push);
+
+        model->draw(command_buffers[image_index]);
+    }
 
     vkCmdEndRenderPass(command_buffers[image_index]);
 
