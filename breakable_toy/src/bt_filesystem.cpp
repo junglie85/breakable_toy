@@ -21,7 +21,7 @@ void bt_filesystem::init(const char* exe_path)
 
     instance.base_path = fs::canonical(exe_dir);
 
-    SPDLOG_TRACE("filesystem base path is {}", exe_dir.c_str());
+    SPDLOG_TRACE("filesystem base path is {}", exe_dir.string());
 }
 
 std::vector<char> bt_filesystem::read_file(std::string_view filepath)
